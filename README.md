@@ -1,14 +1,15 @@
-# Avlod Web
+# Avlod Web — подключение облачной синхронизации
 
-Premium Safari-first family budget web app.
+## Что подготовлено
+- `supabase/schema.sql` — таблицы семьи, участников, операций, целей и приглашений, с Row Level Security.
+- Браузерное приложение пока продолжает работать локально; не вставляйте секретные ключи Supabase в клиентский код.
 
-## Features
-- Emerald and gold interface
-- Dashboard with income, expenses and balance
-- Transaction history and categories
-- Savings goals
-- Local storage and JSON export
-- Installable from Safari via Share → Add to Home Screen
+## Подключение Supabase
+1. Создайте проект на https://supabase.com/dashboard.
+2. В проекте откройте **SQL Editor → New query**.
+3. Откройте файл `supabase/schema.sql` в этом репозитории, скопируйте весь SQL в редактор Supabase и нажмите **Run**.
+4. Откройте **Project Settings → API** (или Connect) и найдите Project URL и publishable key (старое название — anon/public key). Эти два значения допустимы для браузерного клиента только при включённом RLS и корректных политиках.
+5. Не публикуйте `service_role`, `sb_secret_...`, пароль базы данных или другие секретные ключи.
 
-## Privacy and current limitations
-Transactions and goals are stored in this browser on this device only. No synchronization with Android or another iPhone, bank connection, or money transfers are implemented yet.
+## Важно
+Это первый этап подготовки базы, а не законченная синхронизация. Для реального входа, создания семейной группы, безопасного принятия приглашений и переноса текущих локальных операций нужно завершить интеграцию клиента и проверить её на двух аккаунтах. Не вводите реальные семейные финансовые данные, пока это не закончено.
