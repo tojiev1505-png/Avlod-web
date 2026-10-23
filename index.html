@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#102b24">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Avlod">
+  <meta name="description" content="Премиальный семейный бюджет Avlod">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" href="./icon-192.png">
+  <link rel="icon" href="./icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./styles.css">
+  <title>Avlod — Семейный бюджет</title>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div>
+        <div class="wordmark">AVLOD<span class="wordmark-dot">.</span></div>
+        <p class="eyebrow" id="greeting">ВАШ СЕМЕЙНЫЙ КАПИТАЛ</p>
+      </div>
+      <button class="avatar" id="profileShortcut" aria-label="Профиль семьи">A</button>
+    </header>
+
+    <main>
+      <section class="screen active" id="screen-home">
+        <div class="page-heading">
+          <div><h1>Добро пожаловать</h1><p class="subheading">Финансы семьи — в одном месте</p></div>
+        </div>
+        <article class="balance-card">
+          <div class="balance-top"><span class="label-light">ОБЩИЙ БАЛАНС</span><span class="family-pill"><span class="live-dot"></span> СЕМЬЯ</span></div>
+          <div class="balance-number" id="balance">0 ₽</div>
+          <div class="balance-metrics">
+            <div><span class="metric-label"><span class="metric-icon income-icon">↙</span> Доходы</span><strong class="income-text" id="incomeTotal">+0 ₽</strong></div>
+            <div><span class="metric-label"><span class="metric-icon expense-icon">↗</span> Расходы</span><strong class="expense-text" id="expenseTotal">−0 ₽</strong></div>
+          </div>
+          <div class="balance-footer"><span class="mini-bars"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><span>Ваш финансовый обзор</span></div>
+        </article>
+
+        <div class="section-title-row"><h2>Быстрые действия</h2><span class="sparkle">✦</span></div>
+        <div class="action-grid">
+          <button class="action-card income-action" data-add="income"><span class="action-icon">＋</span><span class="action-title">Добавить доход</span><span class="action-caption">Зарплата, премия…</span></button>
+          <button class="action-card expense-action" data-add="expense"><span class="action-icon">↗</span><span class="action-title">Записать расход</span><span class="action-caption">Покупки, счета…</span></button>
+        </div>
+
+        <button class="goal-banner" data-tab="plans">
+          <span class="goal-icon">✧</span><span class="goal-copy"><strong>Семейные цели</strong><small>Планируйте большие мечты вместе</small></span><span class="chevron">›</span>
+        </button>
+
+        <div class="section-title-row"><h2>Последние операции</h2><button class="text-link" data-tab="history">Все операции <span>→</span></button></div>
+        <div id="recentList" class="transaction-list"></div>
+        <p class="privacy-note"><span>🔒</span> Пока данные сохраняются в этом браузере на вашем устройстве.</p>
+      </section>
+
+      <section class="screen" id="screen-history">
+        <div class="page-heading"><div><p class="eyebrow">ВАШИ ФИНАНСЫ</p><h1>История</h1><p class="subheading">Все доходы и расходы</p></div></div>
+        <div class="filter-row" role="group" aria-label="Фильтр операций">
+          <button class="filter-chip selected" data-filter="all">Все</button><button class="filter-chip" data-filter="income">Доходы</button><button class="filter-chip" data-filter="expense">Расходы</button>
+        </div>
+        <div id="historyList" class="transaction-list"></div>
+      </section>
+
+      <section class="screen" id="screen-plans">
+        <div class="page-heading"><div><p class="eyebrow">СТРОИМ БУДУЩЕЕ</p><h1>Планы и цели</h1><p class="subheading">Большие мечты начинаются с плана</p></div></div>
+        <article class="feature-card"><div class="feature-orbit">✧</div><p class="eyebrow gold-eyebrow">ВАША СЛЕДУЮЩАЯ ГЛАВА</p><h2>К чему стремится ваша семья?</h2><p>Отпуск, новый автомобиль или финансовая подушка — выберите цель и двигайтесь к ней шаг за шагом.</p><button class="gold-button" id="createGoal">＋ Создать цель</button></article>
+        <div class="section-title-row"><h2>Ваши накопления</h2></div>
+        <div id="goalsList" class="goal-list"></div>
+        <div class="info-card"><span class="info-icon">✦</span><div><strong>Маленькие шаги — большие перемены</strong><p>Регулярно записывайте операции, чтобы видеть финансовую картину семьи яснее.</p></div></div>
+      </section>
+
+      <section class="screen" id="screen-profile">
+        <div class="page-heading"><div><p class="eyebrow">ВАШЕ ПРОСТРАНСТВО</p><h1>Профиль семьи</h1><p class="subheading">Настройки и участники</p></div></div>
+        <article class="profile-card"><div class="profile-emblem">A</div><div><h2>Семья Avlod</h2><p>Семейный бюджет</p><span class="status-pill">Локальный режим</span></div></article>
+        <div class="settings-list">
+          <div class="setting-row"><span class="setting-icon">♧</span><div><strong>Участники семьи</strong><p>Совместный доступ появится после подключения облачной синхронизации.</p></div><span class="chevron">›</span></div>
+          <div class="setting-row"><span class="setting-icon">⌑</span><div><strong>Конфиденциальность</strong><p>Операции хранятся в локальном хранилище браузера на этом устройстве.</p></div><span class="chevron">›</span></div>
+          <div class="setting-row"><span class="setting-icon">✦</span><div><strong>Об Avlod</strong><p>Версия веб-приложения 1.0</p></div><span class="chevron">›</span></div>
+        </div>
+        <button class="secondary-button" id="exportData">Экспортировать операции</button>
+        <button class="danger-button" id="clearData">Очистить все данные</button>
+        <p class="privacy-note">Важно: сейчас данные не синхронизируются с Android или другим iPhone. Для общего семейного бюджета нужно отдельно подключить защищённый сервер.</p>
+      </section>
+    </main>
+
+    <nav class="tabbar" aria-label="Основная навигация">
+      <button class="tab active" data-tab="home"><span class="tab-icon">⌂</span><span>Главная</span></button>
+      <button class="tab" data-tab="history"><span class="tab-icon">▤</span><span>История</span></button>
+      <button class="tab" data-tab="plans"><span class="tab-icon">✧</span><span>Планы</span></button>
+      <button class="tab" data-tab="profile"><span class="tab-icon">♙</span><span>Профиль</span></button>
+    </nav>
+  </div>
+
+  <dialog id="transactionDialog" class="modal">
+    <form id="transactionForm" method="dialog">
+      <div class="modal-grabber"></div><div class="modal-header"><div><p class="eyebrow" id="modalEyebrow">НОВАЯ ОПЕРАЦИЯ</p><h2 id="modalTitle">Добавить доход</h2></div><button type="button" class="close-button" id="closeTransaction" aria-label="Закрыть">×</button></div>
+      <input type="hidden" id="transactionType" value="income">
+      <label class="field-label" for="transactionName">Название</label><input class="field" id="transactionName" placeholder="Например, зарплата" maxlength="70" required>
+      <label class="field-label" for="transactionAmount">Сумма, ₽</label><input class="field amount-field" id="transactionAmount" type="number" inputmode="decimal" min="1" step="1" placeholder="0" required>
+      <label class="field-label" for="transactionCategory">Категория</label><select class="field" id="transactionCategory"><option>Другое</option><option>Зарплата</option><option>Продукты</option><option>Дом и счета</option><option>Транспорт</option><option>Здоровье</option><option>Дети и семья</option><option>Отдых</option><option>Покупки</option><option>Накопления</option></select>
+      <button class="primary-button" type="submit" id="saveTransaction">Сохранить операцию</button>
+    </form>
+  </dialog>
+
+  <dialog id="goalDialog" class="modal">
+    <form id="goalForm" method="dialog">
+      <div class="modal-grabber"></div><div class="modal-header"><div><p class="eyebrow">ВАША ЦЕЛЬ</p><h2>Создать накопление</h2></div><button type="button" class="close-button" id="closeGoal" aria-label="Закрыть">×</button></div>
+      <label class="field-label" for="goalName">Название цели</label><input class="field" id="goalName" placeholder="Например, семейный отпуск" maxlength="60" required>
+      <label class="field-label" for="goalAmount">Сколько нужно, ₽</label><input class="field" id="goalAmount" type="number" min="1" step="1" placeholder="100000" required>
+      <button class="primary-button" type="submit">Создать цель</button>
+    </form>
+  </dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="./app.js"></script>
+  <script>if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('./sw.js').catch(()=>{});</script>
+</body>
+</html>
