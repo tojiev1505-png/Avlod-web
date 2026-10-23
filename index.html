@@ -72,7 +72,8 @@
 
       <section class="screen" id="screen-profile">
         <div class="page-heading"><div><p class="eyebrow">ВАШЕ ПРОСТРАНСТВО</p><h1>Профиль семьи</h1><p class="subheading">Настройки и участники</p></div></div>
-        <article class="profile-card"><div class="profile-emblem">A</div><div><h2>Семья Avlod</h2><p>Семейный бюджет</p><span class="status-pill">Локальный режим</span></div></article>
+        <article class="profile-card"><div class="profile-emblem">A</div><div><h2>Семья Avlod</h2><p>Семейный бюджет</p><span class="status-pill" id="cloudStatus">Подключение к облаку…</span></div></article>
+        <section class="cloud-panel" id="cloudPanel"><p>Загружаем настройки синхронизации…</p></section>
         <div class="settings-list">
           <div class="setting-row"><span class="setting-icon">♧</span><div><strong>Участники семьи</strong><p>Совместный доступ появится после подключения облачной синхронизации.</p></div><span class="chevron">›</span></div>
           <div class="setting-row"><span class="setting-icon">⌑</span><div><strong>Конфиденциальность</strong><p>Операции хранятся в локальном хранилище браузера на этом устройстве.</p></div><span class="chevron">›</span></div>
@@ -112,6 +113,7 @@
     </form>
   </dialog>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.0"></script>
   <script src="./app.js"></script>
   <script>if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('./sw.js').catch(()=>{});</script>
 </body>
