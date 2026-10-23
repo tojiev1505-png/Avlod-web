@@ -267,7 +267,23 @@ const SUPABASE_URL = 'https://yurbyblszgyznaxxtdlb.supabase.co';
   }
   $('#aiForm').addEventListener('submit',e=>{e.preventDefault();const i=$('#aiInput'),m=i.value.trim();if(!m)return;addAiMessage(m,'user');i.value='';askAvlodGPT('chat',m);});
   $('[data-ai-action]').forEach(b=>b.addEventListener('click',()=>{const k=b.dataset.aiAction;const p={analysis:'Проанализируй наши доходы и расходы. Выдели главные категории и способы экономии.',forecast:'Спрогнозируй бюджет до конца текущего месяца и назови допущения.',savings:'Составь план накоплений по нашим семейным целям.'}[k];addAiMessage(p,'user');askAvlodGPT(k,p);}));
-  $('#aiVoice').addEventListener('click',()=>{const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){addAiMessage('Голосовой ввод не поддерживается браузером. Используй Chrome или микрофон клавиатуры.');return;}const r=new SR();r.lang='ru-RU';r.onresult=e=>{$('#aiInput').value=e.results[0][0].transcript;$('#aiInput').focus();};r.onerror=()=>addAiMessage('Не удалось распознать речь. Проверь разрешение на микрофон.');r.start();});
+  const voiceButton=$('#aiVoice');
+  let activeRecognition=null;
+  voiceButton.addEventListener('click',()=>{
+    if(activeRecognition){activeRecognition.stop();return;}
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(!window.isSecureContext){addAiMessage('Для микрофона открой Avlod по HTTPS: https://tojiev1505-png.github.io/Avlod-web/');return;}
+    if(!SR){addAiMessage('В этом браузере распознавание речи не поддерживается. На Android открой Avlod в Google Chrome и разреши микрофон. Можно также нажать микрофон на клавиатуре Gboard.');$('#aiInput').focus();return;}
+    try{
+      const recognition=new SR();activeRecognition=recognition;recognition.lang='ru-RU';recognition.continuous=false;recognition.interimResults=true;recognition.maxAlternatives=1;
+      voiceButton.textContent='■';voiceButton.setAttribute('aria-label','Остановить запись');voiceButton.classList.add('is-listening');
+      let finalTranscript='';
+      recognition.onresult=event=>{let interim='';for(let n=event.resultIndex;n<event.results.length;n++){const text=event.results[n][0].transcript;if(event.results[n].isFinal)finalTranscript+=text;else interim+=text;}$('#aiInput').value=(finalTranscript||interim).trim();};
+      recognition.onerror=event=>{const messages={ 'not-allowed':'Нет разрешения на микрофон. В настройках Android открой разрешения сайта для микрофона и разреши доступ.','service-not-allowed':'Браузер запретил службу распознавания речи. Проверь настройки Google и попробуй Chrome.','no-speech':'Не услышал речь. Нажми микрофон и говори сразу после начала записи.','network':'Служба распознавания недоступна по сети. Проверь интернет и попробуй ещё раз.'};addAiMessage(messages[event.error]||('Не удалось распознать речь ('+event.error+'). Попробуй микрофон клавиатуры.'));};
+      recognition.onend=()=>{activeRecognition=null;voiceButton.textContent='🎙';voiceButton.setAttribute('aria-label','Голосовой ввод');voiceButton.classList.remove('is-listening');$('#aiInput').focus();};
+      recognition.start();
+    }catch(error){activeRecognition=null;voiceButton.textContent='🎙';voiceButton.classList.remove('is-listening');addAiMessage('Не удалось запустить микрофон. Проверь разрешение на микрофон в браузере Android.');}
+  });
   $('#aiReceipt').addEventListener('change',e=>{const f=e.target.files?.[0];if(!f)return;if(!/^image\/(jpeg|png|webp)$/.test(f.type)||f.size>4*1024*1024){addAiMessage('Выбери JPEG, PNG или WebP размером до 4 МБ.');e.target.value='';return;}const r=new FileReader();r.onload=()=>{addAiMessage('Распознай этот чек.','user');askAvlodGPT('receipt','Распознай чек и извлеки сумму, дату и позиции.',String(r.result)).finally(()=>e.target.value='');};r.onerror=()=>addAiMessage('Не удалось прочитать файл чека.');r.readAsDataURL(f);});
 
 })();
