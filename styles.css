@@ -5,3 +5,38 @@
 
 /* Avlod GPT */
 .tabbar{grid-template-columns:repeat(5,1fr)}.ai-hero{padding:22px;border-radius:22px;background:linear-gradient(135deg,#102b24,#215b45);color:white}.ai-hero strong{font-family:Manrope,sans-serif;font-size:20px}.ai-hero p{font-size:12px;line-height:1.6;color:#c7ddd2}.ai-quick-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:13px 0}.ai-prompt,.ai-upload{border:1px solid #e3e9e3;border-radius:13px;background:white;padding:11px 9px;font-size:11px;font-weight:700;color:var(--forest);text-align:left}.ai-messages{display:flex;flex-direction:column;gap:9px;max-height:42vh;overflow:auto;padding:3px 0 12px}.ai-bubble{max-width:92%;white-space:pre-wrap;overflow-wrap:anywhere;padding:12px 14px;border-radius:16px;font-size:12px;line-height:1.65}.ai-bubble.assistant{align-self:flex-start;background:#fff;border:1px solid #e7ece7}.ai-bubble.user{align-self:flex-end;background:#e2f1e8}.ai-form{position:sticky;bottom:80px;background:white;border:1px solid #e2e9e3;border-radius:18px;padding:10px}.ai-form textarea{width:100%;resize:vertical;min-height:54px;border:0;outline:none;padding:6px;font:inherit;font-size:13px}.ai-form-actions{display:flex;align-items:center;gap:8px}.ai-upload{cursor:pointer}.ai-icon-button{border:0;border-radius:12px;background:#f0f5f1;padding:9px 11px}.ai-send{margin-left:auto;border:0;border-radius:12px;background:var(--forest);color:white;font-size:11px;font-weight:800;padding:11px}.ai-send:disabled{opacity:.6}@media(max-width:360px){.ai-quick-actions{grid-template-columns:1fr}.tab{font-size:8px}.tab-icon{width:35px}}
+
+/* Avlod GPT — polished mobile assistant redesign */
+#screen-ai{padding-bottom:18px}
+#screen-ai .page-heading{margin-bottom:18px}
+#screen-ai .page-heading .eyebrow{letter-spacing:3px}
+#screen-ai .ai-hero{position:relative;isolation:isolate;overflow:hidden;min-height:174px;padding:24px 22px 20px;border:1px solid #287a60;border-radius:28px;background:radial-gradient(ellipse at 88% 16%,#176448 0,transparent 42%),linear-gradient(135deg,#071d19 0%,#103b2d 60%,#07523b 100%);box-shadow:0 16px 35px #0d47351b}
+#screen-ai .ai-hero:before{content:"✦";position:absolute;right:23px;top:15px;color:#43e0a6;font-size:34px;opacity:.9}
+#screen-ai .ai-hero:after{content:"✧";position:absolute;right:28px;bottom:8px;color:#45dca2;font-size:48px;opacity:.75}
+#screen-ai .ai-hero strong{display:block;max-width:72%;font-size:27px;line-height:1.12;letter-spacing:-.8px}
+#screen-ai .ai-hero strong span{color:#39d99b}
+#screen-ai .ai-hero p{max-width:76%;font-size:13px;line-height:1.55;margin:10px 0 0;color:#d1e5dc}
+#screen-ai .ai-quick-actions{gap:10px;margin:14px 0}
+#screen-ai .ai-prompt{display:flex;align-items:center;gap:11px;min-height:82px;padding:14px;border-radius:20px;background:linear-gradient(145deg,#fff,#f7faf8);box-shadow:0 7px 20px #102b2408;text-align:left;font-size:12px;line-height:1.45;border-color:#edf1ee;transition:transform .15s,border-color .15s}
+#screen-ai .ai-prompt:active{transform:scale(.98)}
+#screen-ai .ai-prompt:first-letter{font-size:22px}
+#screen-ai #aiMessages{gap:10px;max-height:34vh;padding:4px 2px 14px;scroll-behavior:smooth}
+#screen-ai .ai-bubble{font-size:13px;line-height:1.65;padding:14px 16px;border-radius:18px;box-shadow:0 4px 14px #102b2408}
+#screen-ai .ai-bubble.assistant{border-color:#e9efea;background:#fff;border-bottom-left-radius:6px}
+#screen-ai .ai-bubble.user{background:#dff5e9;border:1px solid #ccebdc;border-bottom-right-radius:6px}
+#screen-ai .ai-form{bottom:calc(82px + env(safe-area-inset-bottom));padding:13px;border-radius:25px;border-color:#e6ece7;box-shadow:0 9px 28px #102b2410}
+#screen-ai .ai-form textarea{min-height:46px;padding:6px 5px 12px;font-size:14px;line-height:1.5;background:transparent}
+#screen-ai .ai-form textarea::placeholder{color:#9aa49e}
+#screen-ai .ai-form-actions{gap:10px}
+#screen-ai .ai-upload,#screen-ai .ai-icon-button{display:inline-flex;align-items:center;justify-content:center;min-width:42px;height:42px;padding:0;border:0;border-radius:14px;background:#f0f5f1;color:#50615a;font-size:19px}
+#screen-ai .ai-upload{font-size:0}
+#screen-ai .ai-upload:before{content:"▧";font-size:22px}
+#screen-ai .ai-send{width:48px;height:48px;display:grid;place-items:center;margin-left:auto;padding:0;border-radius:50%;background:linear-gradient(135deg,#087b59,#075541);box-shadow:0 7px 18px #087b5930;font-size:0}
+#screen-ai .ai-send:after{content:"↑";font-size:27px;font-weight:500}
+#screen-ai .privacy-note{font-size:10px;line-height:1.6;color:#8b9790;margin:13px 3px}
+.tabbar{padding:8px 8px calc(8px + env(safe-area-inset-bottom));gap:2px;min-height:76px;background:#ffffffed;backdrop-filter:blur(18px);border-top:1px solid #edf0ed}
+.tab{min-width:0;border-radius:18px;padding:5px 1px}
+.tab.active{color:var(--emerald);background:transparent}
+.tab.active .tab-icon{width:43px;height:34px;margin:0 auto 4px;display:grid;place-items:center;border-radius:16px;background:#dff6eb;color:#087b59}
+.tab span:last-child{font-size:10px;font-weight:700;white-space:nowrap}
+@media(max-width:390px){#screen-ai .ai-hero{padding:21px 18px}#screen-ai .ai-hero strong{font-size:24px}#screen-ai .ai-prompt{padding:11px;min-height:78px;font-size:11px}.tab span:last-child{font-size:9px}}
