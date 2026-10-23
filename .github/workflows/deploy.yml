@@ -37,6 +37,24 @@ jobs:
           PY
       - name: Validate JavaScript
         run: node --check app.js
+      - name: Validate Avlod GPT integration
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          html = Path("index.html").read_text(encoding="utf-8")
+          js = Path("app.js").read_text(encoding="utf-8")
+          css = Path("styles.css").read_text(encoding="utf-8")
+          required_html = ['id="screen-ai"', 'id="aiForm"', 'id="aiReceipt"', 'id="aiVoice"', 'data-tab="ai"']
+          required_js = ["functions/v1/avlod-gpt", "getSession()", "data-ai-action", "SpeechRecognition", "readAsDataURL"]
+          missing = [item for item in required_html if item not in html] + [item for item in required_js if item not in js]
+          if missing:
+              raise SystemExit("Avlod GPT integration checks failed: " + ", ".join(missing))
+          if "sk-" in js or "OPENAI_API_KEY" in js:
+              raise SystemExit("OpenAI secret must never be shipped to the browser.")
+          if ".ai-form" not in css or ".ai-bubble" not in css:
+              raise SystemExit("Avlod GPT styles are missing.")
+          print("Avlod GPT UI, authenticated endpoint, voice and receipt hooks verified.")
+          PY
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
