@@ -129,6 +129,37 @@ const SUPABASE_URL = 'https://yurbyblszgyznaxxtdlb.supabase.co';
         cloud.from('goals').select('*').eq('family_id', familyId).order('created_at', { ascending: false })
       ]);
       if (txError || goalError) throw txError || goalError;
+      // Preserve existing device-only records by importing them once if this family has no cloud records yet.
+      const migrationKey = 'avlod.web.cloud-imported.' + familyId;
+      if (!localStorage.getItem(migrationKey) && !(tx || []).length) {
+        const localTx = read(storageKey, []);
+        const localGoals = read(goalsKey, []);
+        if (localTx.length) {
+          const { error } = await cloud.from('transactions').insert(localTx.map(x => ({
+            family_id: familyId, created_by: sessionUser.id, name: String(x.name).slice(0,70),
+            amount: Math.max(1, Math.round(Number(x.amount) || 1)), type: x.type === 'income' ? 'income' : 'expense',
+            category: String(x.category || 'Другое'), occurred_at: x.date || new Date().toISOString()
+          })));
+          if (error) throw error;
+        }
+        if (localGoals.length && !(gs || []).length) {
+          const { error } = await cloud.from('goals').insert(localGoals.map(x => ({
+            family_id: familyId, created_by: sessionUser.id, name: String(x.name).slice(0,60),
+            target: Math.max(1, Math.round(Number(x.target) || 1)), saved: Math.max(0, Math.round(Number(x.saved) || 0))
+          })));
+          if (error) throw error;
+        }
+        localStorage.setItem(migrationKey, 'yes');
+        const refreshed = await Promise.all([
+          cloud.from('transactions').select('*').eq('family_id', familyId).order('occurred_at', { ascending: false }),
+          cloud.from('goals').select('*').eq('family_id', familyId).order('created_at', { ascending: false })
+        ]);
+        if (refreshed[0].error || refreshed[1].error) throw refreshed[0].error || refreshed[1].error;
+        tx.splice(0, tx.length, ...(refreshed[0].data || []));
+        gs.splice(0, gs.length, ...(refreshed[1].data || []));
+      } else if (!(tx || []).length) {
+        localStorage.setItem(migrationKey, 'yes');
+      }
       transactions = (tx || []).map(x => ({ id: x.id, name: x.name, amount: Number(x.amount), type: x.type, category: x.category, date: x.occurred_at, cloudId: x.id }));
       goals = (gs || []).map(x => ({ id: x.id, name: x.name, target: Number(x.target), saved: Number(x.saved), cloudId: x.id }));
       persist(); persistGoals(); render();
