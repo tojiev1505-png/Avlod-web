@@ -252,4 +252,22 @@ const SUPABASE_URL = 'https://yurbyblszgyznaxxtdlb.supabase.co';
   if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('./sw.js').catch(() => {});
   render();
   initCloud();
+
+  const aiMessages = $('#aiMessages');
+  function addAiMessage(text, role='assistant') { const n=document.createElement('div'); n.className='ai-bubble '+role; n.textContent=text; aiMessages.appendChild(n); aiMessages.scrollTop=aiMessages.scrollHeight; }
+  async function askAvlodGPT(action='chat', message='', image='') {
+    if (!cloud || !sessionUser) { addAiMessage('Сначала войдите в аккаунт в профиле семьи.'); changeTab('profile'); return; }
+    if (!familyId) { addAiMessage('Сначала создайте семейную группу или присоединитесь к ней в профиле.'); changeTab('profile'); return; }
+    const btn=$('#aiForm').querySelector('button[type="submit"]'); btn.disabled=true; btn.textContent='Думаю…';
+    try {
+      const {data}=await cloud.auth.getSession(); const token=data.session?.access_token; if(!token) throw new Error('Сессия истекла. Войдите снова.');
+      const res=await fetch(SUPABASE_URL+'/functions/v1/avlod-gpt',{method:'POST',headers:{Authorization:'Bearer '+token,apikey:SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify({action,message,image})});
+      const out=await res.json().catch(()=>({})); if(!res.ok) throw new Error(out.error||'ИИ временно недоступен.'); addAiMessage(out.answer||'Пустой ответ от ИИ.');
+    } catch(e) { addAiMessage(e.message||'Ошибка соединения с Avlod GPT.'); } finally { btn.disabled=false; btn.textContent='Отправить ↑'; }
+  }
+  $('#aiForm').addEventListener('submit',e=>{e.preventDefault();const i=$('#aiInput'),m=i.value.trim();if(!m)return;addAiMessage(m,'user');i.value='';askAvlodGPT('chat',m);});
+  $('[data-ai-action]').forEach(b=>b.addEventListener('click',()=>{const k=b.dataset.aiAction;const p={analysis:'Проанализируй наши доходы и расходы. Выдели главные категории и способы экономии.',forecast:'Спрогнозируй бюджет до конца текущего месяца и назови допущения.',savings:'Составь план накоплений по нашим семейным целям.'}[k];addAiMessage(p,'user');askAvlodGPT(k,p);}));
+  $('#aiVoice').addEventListener('click',()=>{const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){addAiMessage('Голосовой ввод не поддерживается браузером. Используй Chrome или микрофон клавиатуры.');return;}const r=new SR();r.lang='ru-RU';r.onresult=e=>{$('#aiInput').value=e.results[0][0].transcript;$('#aiInput').focus();};r.onerror=()=>addAiMessage('Не удалось распознать речь. Проверь разрешение на микрофон.');r.start();});
+  $('#aiReceipt').addEventListener('change',e=>{const f=e.target.files?.[0];if(!f)return;if(!/^image\/(jpeg|png|webp)$/.test(f.type)||f.size>4*1024*1024){addAiMessage('Выбери JPEG, PNG или WebP размером до 4 МБ.');e.target.value='';return;}const r=new FileReader();r.onload=()=>{addAiMessage('Распознай этот чек.','user');askAvlodGPT('receipt','Распознай чек и извлеки сумму, дату и позиции.',String(r.result)).finally(()=>e.target.value='');};r.onerror=()=>addAiMessage('Не удалось прочитать файл чека.');r.readAsDataURL(f);});
+
 })();
