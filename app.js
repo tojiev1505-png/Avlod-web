@@ -260,6 +260,14 @@ const SUPABASE_URL = 'https://yurbyblszgyznaxxtdlb.supabase.co';
   render();
   initCloud();
 
+  // Recover cloud state after temporary network loss or when a phone resumes the PWA.
+  window.addEventListener('online', () => {
+    if (familyId) loadCloudData();
+  });
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && navigator.onLine && familyId) loadCloudData();
+  });
+
   const aiMessages = $('#aiMessages');
   function addAiMessage(text, role='assistant') { const n=document.createElement('div'); n.className='ai-bubble '+role; n.textContent=text; aiMessages.appendChild(n); aiMessages.scrollTop=aiMessages.scrollHeight; }
   async function askAvlodGPT(action='chat', message='', image='') {
