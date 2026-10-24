@@ -6,7 +6,7 @@
 const SUPABASE_URL = 'https://yurbyblszgyznaxxtdlb.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_bqn09ZdCF7GlgmLxVuCsvw_FzaOl5ek';
   const cloud = window.supabase?.createClient(SUPABASE_URL, SUPABASE_KEY);
-  let sessionUser = null, familyId = null, realtimeChannel = null, cloudBusy = false;
+  let sessionUser = null, familyId = null, realtimeChannel = null, realtimeFamilyId = null, cloudBusy = false, cloudReloadPending = false;
   const storageKey = 'avlod.web.transactions.v1';
   const goalsKey = 'avlod.web.goals.v1';
   let transactions = read(storageKey, []);
@@ -113,7 +113,7 @@ const SUPABASE_URL = 'https://yurbyblszgyznaxxtdlb.supabase.co';
     cloudPanel();
     cloud.auth.onAuthStateChange(async (_event, session) => {
       sessionUser = session?.user || null;
-      if (!sessionUser) { familyId = null; if (realtimeChannel) await cloud.removeChannel(realtimeChannel); cloudPanel(); return; }
+      if (!sessionUser) { familyId = null; realtimeFamilyId = null; if (realtimeChannel) await cloud.removeChannel(realtimeChannel); realtimeChannel = null; cloudPanel(); return; }
       const { data: memberships } = await cloud.from('family_members').select('family_id').eq('user_id', sessionUser.id).limit(1);
       familyId = memberships?.[0]?.family_id || null;
       if (familyId) await loadCloudData();
@@ -121,7 +121,8 @@ const SUPABASE_URL = 'https://yurbyblszgyznaxxtdlb.supabase.co';
     });
   }
   async function loadCloudData() {
-    if (!familyId || cloudBusy) return;
+    if (!familyId) return;
+    if (cloudBusy) { cloudReloadPending = true; return; }
     cloudBusy = true;
     try {
       const [{ data: tx, error: txError }, { data: gs, error: goalError }] = await Promise.all([
@@ -163,13 +164,19 @@ const SUPABASE_URL = 'https://yurbyblszgyznaxxtdlb.supabase.co';
       transactions = (tx || []).map(x => ({ id: x.id, name: x.name, amount: Number(x.amount), type: x.type, category: x.category, date: x.occurred_at, cloudId: x.id }));
       goals = (gs || []).map(x => ({ id: x.id, name: x.name, target: Number(x.target), saved: Number(x.saved), cloudId: x.id }));
       persist(); persistGoals(); render();
-      if (realtimeChannel) await cloud.removeChannel(realtimeChannel);
-      realtimeChannel = cloud.channel('avlod-family-' + familyId)
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions', filter: 'family_id=eq.' + familyId }, () => loadCloudData())
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'goals', filter: 'family_id=eq.' + familyId }, () => loadCloudData())
-        .subscribe();
+      if (!realtimeChannel || realtimeFamilyId !== familyId) {
+        if (realtimeChannel) await cloud.removeChannel(realtimeChannel);
+        realtimeFamilyId = familyId;
+        realtimeChannel = cloud.channel('avlod-family-' + familyId)
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions', filter: 'family_id=eq.' + familyId }, () => loadCloudData())
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'goals', filter: 'family_id=eq.' + familyId }, () => loadCloudData())
+          .subscribe();
+      }
     } catch (err) { toast('Ошибка синхронизации: ' + (err.message || 'неизвестная ошибка')); }
-    finally { cloudBusy = false; }
+    finally {
+      cloudBusy = false;
+      if (cloudReloadPending) { cloudReloadPending = false; loadCloudData(); }
+    }
   }
   async function saveCloudTransaction(item) {
     if (!familyId) return false;
