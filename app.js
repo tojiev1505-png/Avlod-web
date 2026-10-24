@@ -127,23 +127,17 @@ const SUPABASE_URL = 'https://yurbyblszgyznaxxtdlb.supabase.co';
     $('#signOut').addEventListener('click', async () => { if (realtimeChannel) await cloud.removeChannel(realtimeChannel); await cloud.auth.signOut(); sessionUser = null; familyId = null; cloudPanel(); });
   }
   async function initCloud() {
-    if (!cloud) { cloudPanel(); return; }
-    const { data } = await cloud.auth.getSession();
-    sessionUser = data.session?.user || null;
-    if (sessionUser) {
-      const { data: memberships } = await cloud.from('family_members').select('family_id').eq('user_id', sessionUser.id).limit(1);
-      familyId = memberships?.[0]?.family_id || null;
-      if (familyId) await loadCloudData();
+    // Budget data stays on this device. An anonymous session is used only for AI requests.
+    if (!cloud) return;
+    try {
+      const { data } = await cloud.auth.getSession();
+      if (data.session) { sessionUser = data.session.user; return; }
+      const { data: anonymous, error } = await cloud.auth.signInAnonymously();
+      if (error) { console.warn('Anonymous AI session unavailable:', error.message); return; }
+      sessionUser = anonymous.user || null;
+    } catch (error) {
+      console.warn('Anonymous AI session unavailable:', error);
     }
-    cloudPanel();
-    cloud.auth.onAuthStateChange(async (_event, session) => {
-      sessionUser = session?.user || null;
-      if (!sessionUser) { familyId = null; realtimeFamilyId = null; if (realtimeChannel) await cloud.removeChannel(realtimeChannel); realtimeChannel = null; cloudPanel(); return; }
-      const { data: memberships } = await cloud.from('family_members').select('family_id').eq('user_id', sessionUser.id).limit(1);
-      familyId = memberships?.[0]?.family_id || null;
-      if (familyId) await loadCloudData();
-      cloudPanel();
-    });
   }
   async function loadCloudData() {
     if (!familyId) return;
