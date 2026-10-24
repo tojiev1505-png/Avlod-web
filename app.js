@@ -81,9 +81,34 @@ const SUPABASE_URL = 'https://yurbyblszgyznaxxtdlb.supabase.co';
       });
       $('#joinFamily').addEventListener('submit', async e => {
         e.preventDefault();
-        const { data, error } = await cloud.rpc('accept_family_invite', { code: $('#inviteCode').value.trim() });
-        if (error) { cloudPanel(error.message); return; }
-        familyId = data; await loadCloudData(); cloudPanel('Ты присоединился к семейной группе.');
+        const form = $('#joinFamily');
+        const button = form.querySelector('button[type="submit"]');
+        const code = $('#inviteCode').value.trim().replace(/\\s+/g, '').toLowerCase();
+        if (!code) { cloudPanel('Вставь код приглашения от владельца семейной группы.'); return; }
+        button.disabled = true;
+        button.textContent = 'Подключаем…';
+        try {
+          const { data, error } = await cloud.rpc('accept_family_invite', { code });
+          if (error) {
+            const raw = error.message || '';
+            const message = /already has another family|другая семейная группа/i.test(raw)
+              ? 'Этот аккаунт уже состоит в другой семейной группе. Выйди из него и войди в нужный аккаунт.'
+              : /invalid|expired|недействительно|истекло/i.test(raw)
+                ? 'Код приглашения неверный, уже использован или истёк. Попроси владельца создать новый код.'
+                : 'Не удалось присоединиться: ' + (raw || 'ошибка сервера');
+            cloudPanel(message);
+            return;
+          }
+          if (!data) { cloudPanel('Сервер не вернул семейную группу. Обнови страницу и попробуй ещё раз.'); return; }
+          familyId = data;
+          await loadCloudData();
+          cloudPanel('Готово! Этот аккаунт подключён к семейной группе.');
+        } catch (err) {
+          cloudPanel('Ошибка подключения: ' + (err?.message || 'проверь интернет и попробуй снова'));
+        } finally {
+          const currentButton = $('#joinFamily button[type="submit"]');
+          if (currentButton) { currentButton.disabled = false; currentButton.textContent = 'Присоединиться к семье'; }
+        }
       });
       $('#signOut').addEventListener('click', async () => { await cloud.auth.signOut(); sessionUser = null; familyId = null; cloudPanel(); });
       return;
