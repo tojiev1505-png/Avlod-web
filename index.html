@@ -72,16 +72,15 @@
 
 <section class="screen" id="screen-ai"><div class="page-heading"><div><p class="eyebrow">ВАШ УМНЫЙ ПОМОЩНИК</p><h1>Avlod GPT</h1><p class="subheading">Финансы семьи — понятным языком</p></div></div><article class="ai-hero"><strong>Чем помочь вашей семье?</strong><p>Спросите о расходах, бюджете до зарплаты или накоплениях.</p></article><div class="ai-quick-actions"><button class="ai-prompt" data-ai-action="analysis">📊 Анализ расходов</button><button class="ai-prompt" data-ai-action="forecast">📅 Прогноз до конца месяца</button><button class="ai-prompt" data-ai-action="savings">🎯 План накоплений</button></div><div id="aiMessages" class="ai-messages" aria-live="polite"><div class="ai-bubble assistant">Привет! Я Avlod GPT. Войди в профиль семьи, чтобы анализировать общий бюджет.</div></div><form id="aiForm" class="ai-form"><textarea id="aiInput" rows="2" maxlength="4000" placeholder="Например: как сократить расходы на продукты?" aria-label="Сообщение для Avlod GPT"></textarea><div class="ai-form-actions"><label class="ai-upload">📷 Чек<input id="aiReceipt" type="file" accept="image/jpeg,image/png,image/webp" hidden></label><button type="button" id="aiVoice" class="ai-icon-button" aria-label="Голосовой ввод">🎙</button><button type="submit" class="ai-send">Отправить ↑</button></div></form><p class="privacy-note">ИИ даёт рекомендации, а не финансовые гарантии. Чек и данные бюджета передаются серверу для обработки.</p></section>\n      <section class="screen" id="screen-profile">
         <div class="page-heading"><div><p class="eyebrow">ВАШЕ ПРОСТРАНСТВО</p><h1>Профиль семьи</h1><p class="subheading">Настройки и участники</p></div></div>
-        <article class="profile-card"><div class="profile-emblem">A</div><div><h2>Семья Avlod</h2><p>Семейный бюджет</p><span class="status-pill" id="cloudStatus">Подключение к облаку…</span></div></article>
-        <section class="cloud-panel" id="cloudPanel"><p>Загружаем настройки синхронизации…</p></section>
+        <article class="profile-card"><div class="profile-emblem">A</div><div><h2>Мой Avlod</h2><p>Личный бюджет на этом устройстве</p><span class="status-pill">Без аккаунта</span></div></article>
         <div class="settings-list">
-          <div class="setting-row"><span class="setting-icon">♧</span><div><strong>Участники семьи</strong><p>Участники одной семейной группы могут видеть общие операции и цели после входа в аккаунт.</p></div><span class="chevron">›</span></div>
-          <div class="setting-row"><span class="setting-icon">⌑</span><div><strong>Конфиденциальность</strong><p>Без входа данные хранятся на устройстве. После входа в семейную группу операции и цели синхронизируются через защищённый облачный сервис.</p></div><span class="chevron">›</span></div>
+          <div class="setting-row"><span class="setting-icon">⌑</span><div><strong>Данные остаются у тебя</strong><p>Операции и цели хранятся только в этом браузере на этом устройстве. Между телефонами они не синхронизируются.</p></div><span class="chevron">›</span></div>
+          <div class="setting-row"><span class="setting-icon">✦</span><div><strong>Умные подсказки</strong><p>Avlod GPT анализирует бюджет и предлагает способы экономии и накопления. Для ответа данные бюджета отправляются ИИ-сервису.</p></div><span class="chevron">›</span></div>
           <div class="setting-row"><span class="setting-icon">✦</span><div><strong>Об Avlod</strong><p>Версия веб-приложения 1.0</p></div><span class="chevron">›</span></div>
         </div>
         <button class="secondary-button" id="exportData">Экспортировать операции</button>
         <button class="danger-button" id="clearData">Очистить все данные</button>
-        <p class="privacy-note">Подсказка: для общего бюджета войди в аккаунт и создай семейную группу или присоединись к существующей. Не используй очистку данных как способ удалить операции из семейного облака.</p>
+        <p class="privacy-note">Важно: если очистить данные браузера или удалить приложение, локальные записи могут пропасть. Регулярно экспортируй резервную копию.</p>
       </section>
     </main>
 
