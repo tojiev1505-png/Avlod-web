@@ -223,7 +223,6 @@ const SUPABASE_URL = 'https://yurbyblszgyznaxxtdlb.supabase.co';
     const amount = Number($('#transactionAmount').value);
     if (!name || !Number.isSafeInteger(amount) || amount <= 0) { toast('Проверьте название и сумму'); return; }
     const item = { id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()), name, amount, type: $('#transactionType').value, category: $('#transactionCategory').value, date: new Date().toISOString() };
-    if (familyId) { saveCloudTransaction(item).then(ok => { if (ok) { $('#transactionDialog').close(); toast('Операция синхронизирована'); } }); return; }
     transactions.push(item); persist(); render(); $('#transactionDialog').close(); toast('Операция сохранена на устройстве');
   });
   $$('.filter-chip').forEach(button => button.addEventListener('click', () => {
@@ -239,7 +238,6 @@ const SUPABASE_URL = 'https://yurbyblszgyznaxxtdlb.supabase.co';
     const name = $('#goalName').value.trim(), target = Number($('#goalAmount').value);
     if (!name || !Number.isSafeInteger(target) || target <= 0) { toast('Проверьте название и сумму цели'); return; }
     const goal = { id: Date.now(), name, target, saved: 0 };
-    if (familyId) { saveCloudGoal(goal).then(ok => { if (ok) { $('#goalDialog').close(); toast('Цель синхронизирована'); } }); return; }
     goals.push(goal); persistGoals(); renderGoals(); $('#goalDialog').close(); toast('Цель добавлена на устройстве');
   });
   $('#exportData').addEventListener('click', () => {
@@ -266,12 +264,12 @@ const SUPABASE_URL = 'https://yurbyblszgyznaxxtdlb.supabase.co';
   const aiMessages = $('#aiMessages');
   function addAiMessage(text, role='assistant') { const n=document.createElement('div'); n.className='ai-bubble '+role; n.textContent=text; aiMessages.appendChild(n); aiMessages.scrollTop=aiMessages.scrollHeight; }
   async function askAvlodGPT(action='chat', message='', image='') {
-    if (!cloud || !sessionUser) { addAiMessage('Сначала войдите в аккаунт в профиле семьи.'); changeTab('profile'); return; }
-    if (!familyId) { addAiMessage('Сначала создайте семейную группу или присоединитесь к ней в профиле.'); changeTab('profile'); return; }
+    if (!cloud) { addAiMessage('ИИ временно недоступен. Проверьте подключение к интернету.'); return; }
+    if (!sessionUser) { try { const { data, error } = await cloud.auth.signInAnonymously(); if (error) throw error; sessionUser = data.user || null; } catch { addAiMessage('Не удалось запустить ИИ без входа. Попробуйте обновить приложение чуть позже.'); return; } }
     const btn=$('#aiForm').querySelector('button[type="submit"]'); btn.disabled=true; btn.textContent='Думаю…';
     try {
       const {data}=await cloud.auth.getSession(); const token=data.session?.access_token; if(!token) throw new Error('Сессия истекла. Войдите снова.');
-      const res=await fetch(SUPABASE_URL+'/functions/v1/avlod-gpt',{method:'POST',headers:{Authorization:'Bearer '+token,apikey:SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify({action,message,image})});
+      const res=await fetch(SUPABASE_URL+'/functions/v1/avlod-gpt',{method:'POST',headers:{Authorization:'Bearer '+token,apikey:SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify({action,message,image,transactions,goals})});
       const out=await res.json().catch(()=>({})); if(!res.ok) throw new Error(out.error||'ИИ временно недоступен.'); addAiMessage(out.answer||'Пустой ответ от ИИ.');
     } catch(e) { addAiMessage(e.message||'Ошибка соединения с Avlod GPT.'); } finally { btn.disabled=false; btn.textContent='Отправить ↑'; }
   }
