@@ -179,6 +179,41 @@ const SUPABASE_URL = 'https://yurbyblszgyznaxxtdlb.supabase.co';
     if (error) { toast('Не удалось сохранить цель: ' + error.message); return false; }
     await loadCloudData(); return true;
   }
+  function renderSmartTip() {
+    const title = $('#smartTipTitle'), text = $('#smartTipText');
+    if (!title || !text) return;
+    const expenses = transactions.filter(x => x.type === 'expense');
+    const income = transactions.filter(x => x.type === 'income');
+    const now = new Date();
+    const monthExpenses = expenses.filter(x => {
+      const d = new Date(x.date);
+      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    });
+    const monthIncome = income.filter(x => {
+      const d = new Date(x.date);
+      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    }).reduce((sum, x) => sum + x.amount, 0);
+    const spent = monthExpenses.reduce((sum, x) => sum + x.amount, 0);
+    if (!transactions.length) {
+      title.textContent = 'Начни с одной записи';
+      text.textContent = 'Добавь первый доход или расход — так Avlod сможет подсказывать, где можно сэкономить.';
+      return;
+    }
+    const byCategory = {};
+    monthExpenses.forEach(x => { const key = x.category || 'Другое'; byCategory[key] = (byCategory[key] || 0) + x.amount; });
+    const top = Object.entries(byCategory).sort((a,b) => b[1]-a[1])[0];
+    if (monthIncome > 0 && spent > 0 && spent >= monthIncome) {
+      title.textContent = 'Расходы уже сравнялись с доходами';
+      text.textContent = 'В этом месяце записано ' + money(spent) + ' расходов. Проверь обязательные платежи и отложи необязательные покупки.';
+    } else if (top && spent > 0) {
+      title.textContent = 'Проверь категорию «' + top[0] + '»';
+      text.textContent = 'На неё в этом месяце записано ' + money(top[1]) + '. Посмотри, можно ли сократить эту сумму хотя бы на 5% — это около ' + money(Math.round(top[1] * 0.05)) + '.';
+    } else {
+      title.textContent = 'Задай накоплению конкретную сумму';
+      text.textContent = 'Даже небольшая регулярная сумма помогает двигаться к цели. Открой Avlod GPT — он составит план под твой бюджет.';
+    }
+  }
+
   function render() {
     const income = transactions.filter(x => x.type === 'income').reduce((sum, x) => sum + x.amount, 0);
     const expense = transactions.filter(x => x.type === 'expense').reduce((sum, x) => sum + x.amount, 0);
@@ -190,6 +225,7 @@ const SUPABASE_URL = 'https://yurbyblszgyznaxxtdlb.supabase.co';
     const filtered = activeFilter === 'all' ? sorted : sorted.filter(x => x.type === activeFilter);
     $('#historyList').innerHTML = filtered.length ? filtered.map(transactionCard).join('') : emptyState('Операций пока нет','Добавьте доход или расход, чтобы увидеть историю');
     renderGoals();
+    renderSmartTip();
   }
   function renderGoals() {
     $('#goalsList').innerHTML = goals.length ? goals.map(goal => {
