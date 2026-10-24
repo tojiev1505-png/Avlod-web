@@ -254,6 +254,7 @@ const SUPABASE_URL = 'https://yurbyblszgyznaxxtdlb.supabase.co';
     if (!name || !Number.isSafeInteger(amount) || amount <= 0) { toast('Проверьте название и сумму'); return; }
     const item = { id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()), name, amount, type: $('#transactionType').value, category: $('#transactionCategory').value, date: new Date().toISOString() };
     transactions.push(item); persist(); render(); $('#transactionDialog').close(); toast('Операция сохранена на устройстве');
+    requestSmartTip(item.type === 'expense' ? `Только что добавлен расход «${item.name}» на ${item.amount} ₽ в категории «${item.category}». Дай короткую конкретную подсказку по бюджету, не осуждай покупку и не делай выводов по одной операции без оснований.` : `Только что добавлен доход «${item.name}» на ${item.amount} ₽. Подскажи, как разумно распределить доход и сколько можно направить на цели, исходя из данных бюджета.`);
   });
   $$('.filter-chip').forEach(button => button.addEventListener('click', () => {
     activeFilter = button.dataset.filter;
@@ -269,6 +270,7 @@ const SUPABASE_URL = 'https://yurbyblszgyznaxxtdlb.supabase.co';
     if (!name || !Number.isSafeInteger(target) || target <= 0) { toast('Проверьте название и сумму цели'); return; }
     const goal = { id: Date.now(), name, target, saved: 0 };
     goals.push(goal); persistGoals(); renderGoals(); $('#goalDialog').close(); toast('Цель добавлена на устройстве');
+    requestSmartTip(`Создана цель накопления «${goal.name}» на ${goal.target} ₽. Предложи реалистичный план накопления. Если срок неизвестен, покажи примеры ежемесячных взносов и не выдумывай доходы.`);
   });
   $('#exportData').addEventListener('click', () => {
     const blob = new Blob([JSON.stringify({ exportedAt: new Date().toISOString(), transactions, goals }, null, 2)], { type: 'application/json' });
@@ -281,6 +283,15 @@ const SUPABASE_URL = 'https://yurbyblszgyznaxxtdlb.supabase.co';
   });
   if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('./sw.js').catch(() => {});
   render();
+  try {
+    const cachedTip=JSON.parse(localStorage.getItem('avlod.ai.tip')||'null');
+    if(cachedTip && Date.now()-cachedTip.at < 24*60*60*1000) {
+      $('#smartTipTitle').textContent=cachedTip.title||'Совет Avlod GPT';
+      $('#smartTipText').textContent=cachedTip.text||'';
+    } else if(transactions.length || goals.length) {
+      requestSmartTip('Дай одну полезную автоматическую подсказку по текущему бюджету и целям. Назови конкретный шаг, который можно сделать сейчас. Не выдумывай данные.');
+    }
+  } catch {}
   initCloud();
 
   // Recover cloud state after temporary network loss or when a phone resumes the PWA.
@@ -293,6 +304,34 @@ const SUPABASE_URL = 'https://yurbyblszgyznaxxtdlb.supabase.co';
 
   const aiMessages = $('#aiMessages');
   function addAiMessage(text, role='assistant') { const n=document.createElement('div'); n.className='ai-bubble '+role; n.textContent=text; aiMessages.appendChild(n); aiMessages.scrollTop=aiMessages.scrollHeight; }
+  async function requestSmartTip(prompt) {
+    const title=$('#smartTipTitle'), text=$('#smartTipText');
+    if(!title || !text) return;
+    title.textContent='Avlod анализирует бюджет…';
+    text.textContent='Подбираю рекомендацию с учётом твоих операций и целей.';
+    try {
+      if (!cloud) throw new Error('Не удалось загрузить модуль ИИ.');
+      let {data}=await cloud.auth.getSession();
+      if(!data.session) {
+        const sign=await cloud.auth.signInAnonymously();
+        if(sign.error) throw sign.error;
+        data=await cloud.auth.getSession().then(x=>x.data);
+      }
+      const token=data.session?.access_token;
+      if(!token) throw new Error('Не удалось запустить анонимную сессию ИИ. Проверь настройки сервера.');
+      const res=await fetch(SUPABASE_URL+'/functions/v1/avlod-gpt',{method:'POST',headers:{Authorization:'Bearer '+token,apikey:SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify({action:'insight',message:prompt,transactions,goals})});
+      const out=await res.json().catch(()=>({}));
+      if(!res.ok) throw new Error(out.error||'ИИ временно недоступен');
+      const answer=String(out.answer||'').trim();
+      if(!answer) throw new Error('ИИ не вернул рекомендацию');
+      title.textContent='Совет Avlod GPT';
+      text.textContent=answer;
+      localStorage.setItem('avlod.ai.tip',JSON.stringify({at:Date.now(),title:title.textContent,text:answer}));
+    } catch(e) {
+      title.textContent='Умная подсказка';
+      text.textContent='Пока не удалось получить совет от ИИ. '+(e.message||'Попробуй ещё раз из раздела Avlod GPT.');
+    }
+  }
   async function askAvlodGPT(action='chat', message='', image='') {
     if (!cloud) { addAiMessage('ИИ временно недоступен. Проверьте подключение к интернету.'); return; }
     if (!sessionUser) { try { const { data, error } = await cloud.auth.signInAnonymously(); if (error) throw error; sessionUser = data.user || null; } catch { addAiMessage('Не удалось запустить ИИ без входа. Попробуйте обновить приложение чуть позже.'); return; } }
